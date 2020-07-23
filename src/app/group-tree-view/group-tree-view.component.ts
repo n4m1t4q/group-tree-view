@@ -71,6 +71,7 @@ export class GroupTreeViewComponent implements OnInit, AfterViewInit {
 
   private filtering(value: string): void {
     if (value === '') {
+      // リセット
       this.ngOnInit();
       return;
     }
@@ -81,11 +82,19 @@ export class GroupTreeViewComponent implements OnInit, AfterViewInit {
   }
 
   private dfs(group: Group, value: string): Group {
-    
+
 
     return {
       ...group,
     }
+  }
+
+  private contains(group: Group, value: string): boolean {
+    let count = 0;
+    [...group.children].forEach(group => {
+      count += this.contains(group, value) ? 1 : 0;
+    });
+    return group.name.includes(value) || !!count;
   }
 
   trackById(index: number, value: Group) {
