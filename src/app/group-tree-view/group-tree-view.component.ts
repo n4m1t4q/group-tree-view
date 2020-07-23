@@ -17,7 +17,9 @@ interface Group {
 export class GroupTreeViewComponent implements OnInit, AfterViewInit {
   @ViewChild('filterInput') input: ElementRef;
   private subscription: Subscription;
+  overview: Group[];
   groupTree: Group[];
+  filtered: boolean;
 
   constructor() { }
 
@@ -54,13 +56,14 @@ export class GroupTreeViewComponent implements OnInit, AfterViewInit {
         }
       ]
     }];
+    this.filtered = false;
   }
 
   ngAfterViewInit() {
     this.subscription = fromEvent<any>(this.input.nativeElement, 'keyup')
       .pipe(
         map((event) => event.target.value),
-        debounceTime(250),
+        debounceTime(500),
         distinctUntilChanged()
       ).subscribe(
         value => {
@@ -69,32 +72,35 @@ export class GroupTreeViewComponent implements OnInit, AfterViewInit {
       );
   }
 
+  onGroupNameClick(group: Group) {
+    console.log(group);
+  }
+
   private filtering(value: string): void {
     if (value === '') {
-      // リセット
       this.ngOnInit();
+      this.filtered = false;
       return;
     }
 
+    this.filtered = true;
     this.groupTree = [...this.groupTree].map((group) => 
       this.dfs(group, value)
     )
   }
 
   private dfs(group: Group, value: string): Group {
-
+    const children = [...group.children].map((group) =>
+      this.dfs(group, value)
+    );
+    const childrenVisibles = [...children]
+      .reduce((sum: number, child: Group) => sum + (child.visible ? 1 : 0), 0);
 
     return {
       ...group,
+      children: [...children],
+      visible: group.name.includes(value) || !!childrenVisibles
     }
-  }
-
-  private contains(group: Group, value: string): boolean {
-    let count = 0;
-    [...group.children].forEach(group => {
-      count += this.contains(group, value) ? 1 : 0;
-    });
-    return group.name.includes(value) || !!count;
   }
 
   trackById(index: number, value: Group) {
