@@ -76,20 +76,16 @@ export class GroupTreeViewComponent implements OnInit, AfterViewInit {
     }
 
     this.groupTree = [...this.groupTree].map((group) => 
-      (
-        {
-          ...group,
-          visible: !!this.dfs(group, value),
-          children: [
-
-          ],
-        }
-      )
+      this.dfs(group, value)
     )
   }
 
-  private dfs(group: Group, value: string): number {
-    return 1;
+  private dfs(group: Group, value: string): Group {
+    
+
+    return {
+      ...group,
+    }
   }
 
   trackById(index: number, value: Group) {
