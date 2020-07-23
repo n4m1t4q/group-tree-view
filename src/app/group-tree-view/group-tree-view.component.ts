@@ -16,10 +16,13 @@ interface Group {
 })
 export class GroupTreeViewComponent implements OnInit, AfterViewInit {
   @ViewChild('filterInput') input: ElementRef;
+  // Input: groupTree
+  // Output: group
   private subscription: Subscription;
   overview: Group[];
   groupTree: Group[];
   filtered: boolean;
+  selectedGroupId: string;
 
   constructor() { }
 
@@ -73,7 +76,7 @@ export class GroupTreeViewComponent implements OnInit, AfterViewInit {
   }
 
   onGroupNameClick(group: Group) {
-    console.log(group);
+    this.selectedGroupId = group.id;
   }
 
   private filtering(value: string): void {
