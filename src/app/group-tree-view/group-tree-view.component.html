@@ -2,7 +2,10 @@
 <ng-template #recursiveTree let-groupTree>
   <div class="tree" *ngFor="let group of groupTree; trackBy: trackById">
     <ng-container *ngIf="group.visible || !filtered">
-      <input type="checkbox" [disabled]="filtered" [(ngModel)]="group.visible">
+      <ng-container *ngIf="group.children.length">
+        <input type="checkbox" [id]="group.id" [disabled]="filtered" [(ngModel)]="group.visible">
+        <label [for]="group.id">{{ group.visible ?  'V' : '>' }}</label>
+      </ng-container>
       <label [class.selected]="group.id === selectedGroupId" (click)="onGroupNameClick(group)">{{ group.name }}</label>
       <div class="list" *ngIf="group.children.length > 0 && group.visible" >
         <ng-container *ngTemplateOutlet="recursiveTree; context:{ $implicit: group.children }"></ng-container>

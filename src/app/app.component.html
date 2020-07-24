@@ -1,1 +1,3 @@
-<app-group-tree-view></app-group-tree-view>
+<app-group-tree-view [groupTree]="groupTree" (selected)="onGroupSelected($event)"></app-group-tree-view>
+
+<ng-container *ngIf="selectedGroup">selected Group: {{ selectedGroup.name }}</ng-container>

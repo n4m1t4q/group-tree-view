@@ -1,13 +1,8 @@
-import { Component, OnInit, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef, AfterViewInit, Input, Output, EventEmitter } from '@angular/core';
 import { Subscription, fromEvent } from 'rxjs';
 import { map, startWith, debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
-interface Group {
-  name: string;
-  id: string,
-  visible: boolean;
-  children: Group[];
-}
+import { Group, GroupDisplay, GroupTree } from '../model/group';
 
 @Component({
   selector: 'app-group-tree-view',
@@ -15,50 +10,20 @@ interface Group {
   styleUrls: ['./group-tree-view.component.scss']
 })
 export class GroupTreeViewComponent implements OnInit, AfterViewInit {
+  @Input() groupTree: GroupTree;
+  private initialGroupTree: GroupTree;
+
   @ViewChild('filterInput') input: ElementRef;
-  // Input: groupTree
-  // Output: group
   private subscription: Subscription;
-  overview: Group[];
-  groupTree: Group[];
+  @Output() selected = new EventEmitter<Group>();
   filtered: boolean;
+  
   selectedGroupId: string;
 
   constructor() { }
 
   ngOnInit() {
-    this.groupTree = [{
-      name: '代表取締役',
-      id: 'ceo',
-      visible: true,
-      children: [
-        {
-          name: '営業課',
-          id: 'sales',
-          visible: true,
-          children: [
-            {
-              name: '営業1課',
-              id: 'sales1',
-              visible: true,
-              children: [],
-            },
-            {
-              name: '営業2課',
-              id: 'sales2',
-              visible: true,
-              children: [],
-            }
-          ],
-        },
-        {
-          name: '経理部',
-          id: 'accounting',
-          visible: true,
-          children: [],
-        }
-      ]
-    }];
+    this.initialGroupTree = this.groupTree;
     this.filtered = false;
   }
 
@@ -75,38 +40,37 @@ export class GroupTreeViewComponent implements OnInit, AfterViewInit {
       );
   }
 
-  onGroupNameClick(group: Group) {
+  onGroupNameClick(group: GroupDisplay) {
     this.selectedGroupId = group.id;
+    this.selected.emit({ id: group.id, name: group.name });
   }
 
   private filtering(value: string): void {
     if (value === '') {
-      this.ngOnInit();
+      this.groupTree = [...this.initialGroupTree];
       this.filtered = false;
       return;
     }
 
-    this.filtered = true;
     this.groupTree = [...this.groupTree].map((group) => 
-      this.dfs(group, value)
+      this.setVisible(group, value)
     )
+    this.filtered = true;
   }
 
-  private dfs(group: Group, value: string): Group {
+  private setVisible(group: GroupDisplay, value: string): GroupDisplay {
     const children = [...group.children].map((group) =>
-      this.dfs(group, value)
+      this.setVisible(group, value)
     );
-    const childrenVisibles = [...children]
-      .reduce((sum: number, child: Group) => sum + (child.visible ? 1 : 0), 0);
 
     return {
       ...group,
       children: [...children],
-      visible: group.name.includes(value) || !!childrenVisibles
+      visible: group.name.includes(value) || !![...children].find((group) => group.visible)
     }
   }
 
-  trackById(index: number, value: Group) {
+  trackById(_, value: GroupDisplay) {
     return value ? value.id : null;
   }
 

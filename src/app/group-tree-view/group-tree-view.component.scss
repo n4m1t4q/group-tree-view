@@ -1,6 +1,10 @@
 .tree {
+  input {
+    display: none;
+  }
+
   .selected {
-    background: blue;
+    background: mistyrose;
   }
 
   .list {
